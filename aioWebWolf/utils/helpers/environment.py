@@ -46,3 +46,12 @@ def setup_env():
     except AttributeError:
         raise AttributeError(
             'В модуле settings отсутствует список INSTALLED_APPS, проверьте, что вы в правильной директории')
+
+
+def get_installed_apps() -> list:
+    apps = os.getenv('INSTALLED_APPS')
+
+    if not apps:
+        raise AttributeError('В config/settings.py не прописаны приложения в списке INSTALLED_APPS')
+
+    return json.loads(apps)
