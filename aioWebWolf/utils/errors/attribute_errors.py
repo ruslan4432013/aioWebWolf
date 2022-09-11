@@ -1,0 +1,4 @@
+class IncorrectVariable(Exception):
+    pass
+
+
