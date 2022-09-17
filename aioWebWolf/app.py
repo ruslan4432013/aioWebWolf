@@ -42,9 +42,10 @@ class Application:
         :param receive: Канал, по которому будут приниматься входящие сообщения с сервера.
         :param send:  Канал, по которому отправляются исходящие сообщения на сервер.
         """
-        request = {}
+        request = {'method': scope['method']}
+
         if scope['type'] == 'http':
-            if scope['method'] == 'GET':
+            if request['method'] == 'GET':
                 params = await GetRequests.get_request_params(scope)
                 request['request_params'] = params
                 params and print(f'Нам пришли GET-параметры: {params}')

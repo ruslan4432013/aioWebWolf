@@ -1,4 +1,7 @@
 # get requests
+from aioWebWolf.utils.decoder import Decoder
+
+
 class GetRequests:
 
     @staticmethod
@@ -19,5 +22,6 @@ class GetRequests:
         query_bytes: bytes = environ['query_string']
         query_string = query_bytes.decode('UTF-8')
 
-        request_params = await GetRequests.parse_input_data(query_string)
+        result = await GetRequests.parse_input_data(query_string)
+        request_params = await Decoder.get_post_request_data(result)
         return request_params

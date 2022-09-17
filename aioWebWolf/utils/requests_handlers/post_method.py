@@ -1,31 +1,5 @@
-from quopri import decodestring
-import re
-
+from aioWebWolf.utils.decoder import Decoder
 from aioWebWolf.utils.helpers import read_body
-
-
-class Decoder:
-
-    @staticmethod
-    def char_handle(match: re.Match):
-        new_string = match.group()
-        unicode_string = new_string.replace('&#', '').replace(';', '')
-        return chr(int(unicode_string))
-
-    @classmethod
-    async def decode_value(cls, data):
-        new_data = {}
-        for k, v in data.items():
-            val = bytes(v.replace('%', '=').replace("+", " "), 'UTF-8')
-            val_decode_str = decodestring(val).decode('UTF-8')
-            new_data[k] = await cls.decode_unicode_sting(val_decode_str)
-        return new_data
-
-    @classmethod
-    async def decode_unicode_sting(cls, value: str):
-        correct_value = re.sub(r'&#\d+;', cls.char_handle, value)
-
-        return correct_value
 
 
 class PostRequests:
@@ -67,5 +41,5 @@ class PostRequests:
         # превращаем данные в словарь
         data = await cls.parse_asgi_input_data(data)
 
-        data = await Decoder.decode_value(data)
+        data = await Decoder.get_post_request_data(data)
         return data

@@ -1,10 +1,14 @@
+# builtins imports
 import uvicorn
 import sys
 
 sys.path.append('..')
 
+# aioWebWolf imports
 from aioWebWolf.app import Application
 from aioWebWolf.middlewares import secret_middleware, other_middleware
+
+# local imports
 from main.routes import routes
 from config.settings import IP_ADDRESS, PORT
 

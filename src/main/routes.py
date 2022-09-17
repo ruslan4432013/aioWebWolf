@@ -1,7 +1,13 @@
-from .views import main, contacts, about
+from .views import Index, Contacts, About, CoursesList, Courses, CreateCourse, CreateCategory, CategoryList,CopyCourse
 
 routes = {
-    '/': main,
-    '/contacts/': contacts,
-    '/about/': about
+    '/': Index(),
+    '/contacts/': Contacts(),
+    '/about/': About(),
+    '/courses/': Courses(),
+    '/courses-list/': CoursesList(),
+    '/create-course/': CreateCourse(),
+    '/create-category/': CreateCategory(),
+    '/category-list/': CategoryList(),
+    '/copy-course/': CopyCourse(),
 }
