@@ -1,5 +1,6 @@
 from aioWebWolf.utils.creators.response_creator import create_response
 
 
-async def not_found_404_view(request):
-    return create_response(400, '404 Not Found')
+class NotFound:
+    async def __call__(self, request):
+        return create_response(400, '404 Not Found')

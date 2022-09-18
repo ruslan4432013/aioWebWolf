@@ -1,29 +1,21 @@
 import asyncio
+
+from aioWebWolf.core.route.route import AppRoute
 from aioWebWolf.utils.helpers.environment import check_env, setup_env
 from aioWebWolf.utils.requests_handlers import GetRequests, PostRequests
 from aioWebWolf.views import not_found_404_view
 
 
 class Application:
-    def __init__(self, routes, middlewares=None):
+
+    def __init__(self, route, middlewares=None):
         check_env()
         setup_env()
 
         if middlewares is None:
             middlewares = []
-        self.routes = routes
+        self.route: AppRoute = route
         self.middlewares = middlewares
-
-    def get_view(self, path):
-        if not path.endswith('/'):
-            path += '/'
-
-        view = not_found_404_view
-
-        if path in self.routes:
-            view = self.routes[path]
-
-        return view
 
     async def start_middleware_handling(self, request):
         tasks = [asyncio.create_task(middleware(request)) for middleware in self.middlewares]
@@ -31,6 +23,7 @@ class Application:
 
     @staticmethod
     async def send_response(send, view, request):
+
         headers, body = await view(request)
 
         await send(headers)
@@ -55,7 +48,7 @@ class Application:
                 print(f'Нам пришёл post-запрос: {params}')
 
             path = scope['path']
-            view = self.get_view(path)
+            view = self.route.get_view(path)
 
             await self.start_middleware_handling(request)
             await self.send_response(send, view, request)

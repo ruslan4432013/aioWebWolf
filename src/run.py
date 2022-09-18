@@ -9,12 +9,12 @@ from aioWebWolf.app import Application
 from aioWebWolf.middlewares import secret_middleware, other_middleware
 
 # local imports
-from main.routes import routes
+from main.views import main_route
 from config.settings import IP_ADDRESS, PORT
 
 middlewares = [secret_middleware, other_middleware]
 
-app = Application(routes=routes, middlewares=middlewares)
+app = Application(route=main_route, middlewares=middlewares)
 
 if __name__ == "__main__":
     # Адрес и порт обязательно берется из настроек

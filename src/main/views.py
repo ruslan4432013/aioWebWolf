@@ -1,32 +1,47 @@
-from aioWebWolf.core import Engine, Logger
+import asyncio
+
+from aioWebWolf.core import Engine, Logger, Debugger
+from aioWebWolf.core.route.route import AppRoute
 from aioWebWolf.utils import create_response
 from aioWebWolf.utils.responses import template_response
 
 site = Engine()
 logger = Logger('main')
 
+main_route = AppRoute()
 
+
+@main_route.all_requests(url='/')
 class Index:
+    @Debugger(name='Index')
     async def __call__(self, request):
         return template_response('main/index.jinja2')
 
 
+@main_route.all_requests(url='/courses')
 class Courses:
+    @Debugger(name='Courses')
     async def __call__(self, request):
         return template_response('main/course.jinja2', objects_list=site.categories)
 
 
+@main_route.all_requests(url='/about')
 class About:
+    @Debugger(name='About')
     async def __call__(self, request):
         return template_response('main/about.jinja2')
 
 
+@main_route.all_requests(url='/contacts')
 class Contacts:
+    @Debugger(name='Contacts')
     async def __call__(self, request):
         return template_response('main/contacts.jinja2')
 
 
+@main_route.all_requests(url='/courses-list')
 class CoursesList:
+    @Debugger(name='CoursesList')
     async def __call__(self, request):
         logger.log('Список курсов')
         try:
@@ -43,9 +58,11 @@ class CoursesList:
             return create_response(200, 'No courses have been added yet')
 
 
+@main_route.all_requests(url='/create-course')
 class CreateCourse:
     category_id = -1
 
+    @Debugger(name='CreateCourse')
     async def __call__(self, request):
         if request['method'] == 'POST':
             data = request['data']
@@ -76,7 +93,9 @@ class CreateCourse:
                 return create_response(200, 'No courses have been added yet')
 
 
+@main_route.all_requests(url='/create-category')
 class CreateCategory:
+    @Debugger(name='CreateCategory')
     async def __call__(self, request):
 
         if request['method'] == 'POST':
@@ -101,14 +120,18 @@ class CreateCategory:
             return template_response('main/create_category.jinja2', categories=categories)
 
 
+@main_route.all_requests(url='/category-list')
 class CategoryList:
+    @Debugger(name='CategoryList')
     async def __call__(self, request):
         logger.log('Список категорий')
         return template_response('main/category_list.jinja2',
                                  objects_list=site.categories)
 
 
+@main_route.all_requests(url='/copy-course')
 class CopyCourse:
+    @Debugger(name='CopyCourse')
     async def __call__(self, request):
         request_params = request['request_params']
 
