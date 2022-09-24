@@ -23,7 +23,6 @@ class Application:
 
     @staticmethod
     async def send_response(send, view, request):
-
         headers, body = await view(request)
 
         await send(headers)

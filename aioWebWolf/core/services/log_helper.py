@@ -1,15 +1,17 @@
 from time import time
 
-from .metaclasses import SingletonByName
+from aioWebWolf.core.services.metaclasses import SingletonByName
+from aioWebWolf.core.services.writer import FileWriter
 
 
 class Logger(metaclass=SingletonByName):
-    def __init__(self, name):
+    def __init__(self, name, writer=FileWriter()):
         self.name = name
+        self.writer = writer
 
-    @staticmethod
-    def log(text):
-        print(f'log---> {text}')
+    def log(self, text):
+        text = f'log---> {text}'
+        self.writer.write(text)
 
 
 class Debugger:

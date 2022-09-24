@@ -1,7 +1,8 @@
-import asyncio
-
 from aioWebWolf.core import Engine, Logger, Debugger
 from aioWebWolf.core.route.route import AppRoute
+from aioWebWolf.core.services.cbv.base_view import ListView, CreateView
+from aioWebWolf.core.services.observer.notifiers import SmsNotifier, EmailNotifier
+from aioWebWolf.core.services.serializer import BaseSerializer
 from aioWebWolf.utils import create_response
 from aioWebWolf.utils.responses import template_response
 
@@ -9,7 +10,8 @@ site = Engine()
 logger = Logger('main')
 
 main_route = AppRoute()
-
+email_notifier = EmailNotifier()
+sms_notifier = SmsNotifier()
 
 @main_route.all_requests(url='/')
 class Index:
@@ -69,8 +71,12 @@ class CreateCourse:
             name = data['name']
             category = None
             if self.category_id != -1:
-                category = site.find_category_by_id(int(self.category_id))
+                category = site.find_category_by_id(self.category_id)
                 course = site.create_course('record', name, category)
+
+                course.observers.append(email_notifier)
+                course.observers.append(sms_notifier)
+                print()
                 site.courses.append(course)
 
             context = dict(
@@ -152,3 +158,44 @@ class CopyCourse:
                                      name=new_course.category.name)
         except KeyError:
             return create_response(200, 'No courses have been added yet')
+
+
+@main_route.all_requests(url='/student-list')
+class StudentListView(ListView):
+    queryset = site.students
+    template_name = 'main/student_list.jinja2'
+
+
+@main_route.all_requests(url='/create-student/')
+class StudentCreateView(CreateView):
+    template_name = 'main/create_student.jinja2'
+
+    async def create_obj(self, data: dict):
+        name: str = data['name']
+        new_obj = site.create_user('student', name)
+        site.students.append(new_obj)
+
+
+@main_route.all_requests(url='/add-student/')
+class AddStudentByCourseCreateView(CreateView):
+    template_name = 'main/add_student.jinja2'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['courses'] = site.courses
+        context['students'] = site.students
+        return context
+
+    async def create_obj(self, data: dict):
+        course_name = data['course_name']
+        course = site.get_course(course_name)
+        student_name = data['student_name']
+        student = site.get_student(student_name)
+        await course.add_student(student)
+
+
+@main_route.all_requests(url='/api/')
+class CourseApi:
+    @Debugger(name='CourseApi')
+    async def __call__(self, request):
+        return create_response(200, BaseSerializer(site.courses).save())

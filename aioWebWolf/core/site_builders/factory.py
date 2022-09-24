@@ -10,8 +10,8 @@ class UserFactory:
 
     # порождающий паттерн Фабричный метод
     @classmethod
-    def create(cls, type_):
-        return cls.types[type_]()
+    def create(cls, type_, name):
+        return cls.types[type_](name)
 
 
 class CourseFactory:

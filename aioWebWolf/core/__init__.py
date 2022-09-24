@@ -1,2 +1,2 @@
 from .engine import Engine
-from .log_helper import Logger, Debugger
+from aioWebWolf.core.services.log_helper import Logger, Debugger

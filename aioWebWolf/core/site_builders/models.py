@@ -1,4 +1,4 @@
-from .abstractions import User, Course
+from . import User, Course
 
 
 class Teacher(User):
@@ -6,7 +6,9 @@ class Teacher(User):
 
 
 class Student(User):
-    pass
+    def __init__(self, name):
+        self.courses = []
+        super().__init__(name)
 
 
 class InteractiveCourse(Course):

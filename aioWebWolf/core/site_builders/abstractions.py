@@ -1,9 +1,10 @@
 from abc import ABCMeta
-from .mixins import PrototypeMixin
+from aioWebWolf.core.services import PrototypeMixin, Subject
 
 
 class User(metaclass=ABCMeta):
-    pass
+    def __init__(self, name):
+        self.name = name
 
 
 class Category:
@@ -23,9 +24,19 @@ class Category:
         return result
 
 
-class Course(PrototypeMixin):
+class Course(PrototypeMixin, Subject):
 
-    def __init__(self, name: str, category: Category):
+    def __init__(self, name, category):
         self.name = name
         self.category = category
         self.category.courses.append(self)
+        self.students = []
+        super().__init__()
+
+    def __getitem__(self, item):
+        return self.students[item]
+
+    async def add_student(self, student):
+        self.students.append(student)
+        student.courses.append(self)
+        await self.notify()

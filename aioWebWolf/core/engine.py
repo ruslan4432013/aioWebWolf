@@ -1,7 +1,7 @@
-from .models import Teacher, Student, Course
-from .abstractions import Category
-from .factory import UserFactory, CourseFactory
-from .metaclasses import Singleton
+from aioWebWolf.core.site_builders.models import Teacher, Student, Course
+from aioWebWolf.core.site_builders.abstractions import Category
+from aioWebWolf.core.site_builders.factory import UserFactory, CourseFactory
+from aioWebWolf.core.services.metaclasses import Singleton
 
 
 class Engine(metaclass=Singleton):
@@ -12,8 +12,8 @@ class Engine(metaclass=Singleton):
         self.categories: list[Category] = []
 
     @staticmethod
-    def create_user(type_):
-        return UserFactory.create(type_)
+    def create_user(type_, name):
+        return UserFactory.create(type_, name)
 
     @staticmethod
     def create_category(name, category: Category = None):
@@ -35,3 +35,8 @@ class Engine(metaclass=Singleton):
             if item.name == name:
                 return item
         return None
+
+    def get_student(self, name) -> Student:
+        for item in self.students:
+            if item.name == name:
+                return item
