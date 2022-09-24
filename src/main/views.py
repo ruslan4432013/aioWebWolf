@@ -76,7 +76,6 @@ class CreateCourse:
 
                 course.observers.append(email_notifier)
                 course.observers.append(sms_notifier)
-                print()
                 site.courses.append(course)
 
             context = dict(
