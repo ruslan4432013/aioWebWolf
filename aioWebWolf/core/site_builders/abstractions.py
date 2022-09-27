@@ -1,26 +1,32 @@
 from abc import ABCMeta
+
+from aioWebWolf.core.orm.unit_of_work import DomainObject
 from aioWebWolf.core.services import PrototypeMixin, Subject
 
 
 class User(metaclass=ABCMeta):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, **kwargs):
+        if 'name' in kwargs:
+            self.name = kwargs.get('name')
+
+        if 'id' in kwargs:
+            self.id = kwargs.get('id')
+
+        self.courses = []
 
 
-class Category:
-    auto_id = 0
+class Category(DomainObject):
+    def __init__(self, **kwargs):
+        if 'name' in kwargs:
+            self.name = kwargs.get('name')
 
-    def __init__(self, name: str, category=None):
-        self.id = Category.auto_id
-        Category.auto_id += 1
-        self.name = name
-        self.category: Category = category
-        self.courses: list[Course] = []
+        if 'id' in kwargs:
+            self.id = kwargs.get('id')
+
+        self.courses = []
 
     def course_count(self):
         result = len(self.courses)
-        if self.category:
-            result += self.category.course_count()
         return result
 
 

@@ -41,8 +41,10 @@ def setup_env():
             raise IncorrectVariable('INSTALLED_APPS должен быть списком')
 
         INSTALLED_APPS: Final = json.dumps(settings.INSTALLED_APPS)
+        PATH_TO_DB = settings.PATH_TO_DB
 
         os.environ['INSTALLED_APPS'] = INSTALLED_APPS
+        os.environ['PATH_TO_DB'] = PATH_TO_DB
     except AttributeError:
         raise AttributeError(
             'В модуле settings отсутствует список INSTALLED_APPS, проверьте, что вы в правильной директории')

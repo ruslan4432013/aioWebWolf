@@ -1,14 +1,14 @@
 from . import User, Course
+from ..orm.unit_of_work import DomainObject
 
 
 class Teacher(User):
     pass
 
 
-class Student(User):
-    def __init__(self, name):
-        self.courses = []
-        super().__init__(name)
+class Student(User, DomainObject):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class InteractiveCourse(Course):

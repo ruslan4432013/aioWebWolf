@@ -3,7 +3,6 @@ import asyncio
 from aioWebWolf.core.route.route import AppRoute
 from aioWebWolf.utils.helpers.environment import check_env, setup_env
 from aioWebWolf.utils.requests_handlers import GetRequests, PostRequests
-from aioWebWolf.views import not_found_404_view
 
 
 class Application:
@@ -11,7 +10,6 @@ class Application:
     def __init__(self, route, middlewares=None):
         check_env()
         setup_env()
-
         if middlewares is None:
             middlewares = []
         self.route: AppRoute = route

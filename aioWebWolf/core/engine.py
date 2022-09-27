@@ -12,12 +12,12 @@ class Engine(metaclass=Singleton):
         self.categories: list[Category] = []
 
     @staticmethod
-    def create_user(type_, name):
-        return UserFactory.create(type_, name)
+    def create_user(type_):
+        return UserFactory.create(type_)
 
     @staticmethod
-    def create_category(name, category: Category = None):
-        return Category(name, category)
+    def create_category():
+        return Category()
 
     def find_category_by_id(self, category_id: int):
         for item in self.categories:

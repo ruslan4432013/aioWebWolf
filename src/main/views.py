@@ -1,8 +1,11 @@
 from aioWebWolf.core import Engine, Logger, Debugger
+from aioWebWolf.core.orm.unit_of_work import UnitOfWork
 from aioWebWolf.core.route.route import AppRoute
 from aioWebWolf.core.services.cbv.base_view import ListView, CreateView
 from aioWebWolf.core.services.observer.notifiers import SmsNotifier, EmailNotifier
 from aioWebWolf.core.services.serializer import BaseSerializer
+from aioWebWolf.core.site_builders.abstractions import Category
+from aioWebWolf.core.site_builders.model_mappers import MapperRegistry, CategoryMapper
 from aioWebWolf.utils import create_response
 from aioWebWolf.utils.responses import template_response
 
@@ -12,6 +15,10 @@ logger = Logger('main')
 main_route = AppRoute()
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
+
 
 @main_route.all_requests(url='/')
 class Index:
@@ -24,7 +31,8 @@ class Index:
 class Courses:
     @Debugger(name='Courses')
     async def __call__(self, request):
-        return template_response('main/course.jinja2', objects_list=site.categories)
+        category = MapperRegistry.get_current_mapper('category').all()
+        return template_response('main/course.jinja2', objects_list=category)
 
 
 @main_route.all_requests(url='/about')
@@ -48,7 +56,7 @@ class CoursesList:
         logger.log('Список курсов')
         try:
             category_id = int(request['request_params']['id'])
-            category = site.find_category_by_id(category_id)
+            category = MapperRegistry.get_current_mapper('category').get_by_id(category_id)
             context = dict(
                 objects_list=category.courses,
                 name=category.name,
@@ -71,7 +79,7 @@ class CreateCourse:
             name = data['name']
             category = None
             if self.category_id != -1:
-                category = site.find_category_by_id(self.category_id)
+                category = MapperRegistry.get_current_mapper('category').get_by_id(self.category_id)
                 course = site.create_course('record', name, category)
 
                 course.observers.append(email_notifier)
@@ -89,7 +97,7 @@ class CreateCourse:
             try:
                 self.category_id = int(request['request_params']['id'])
 
-                category = site.find_category_by_id(self.category_id)
+                category = MapperRegistry.get_current_mapper('category').get_by_id(self.category_id)
 
                 return template_response('main/create_course.jinja2',
                                          name=category.name,
@@ -99,39 +107,28 @@ class CreateCourse:
 
 
 @main_route.all_requests(url='/create-category')
-class CreateCategory:
-    @Debugger(name='CreateCategory')
-    async def __call__(self, request):
+class CategoriesCreateView(CreateView):
+    template_name = 'main/create_category.jinja2'
 
-        if request['method'] == 'POST':
+    async def create_obj(self, data: dict):
+        name = data.get('name')
 
-            data = request['data']
+        new_category = site.create_category()
 
-            name = data['name']
+        site.categories.append(new_category)
 
-            category_id = data.get('category_id')
-
-            category = None
-            if category_id:
-                category = site.find_category_by_id(int(category_id))
-
-            new_category = site.create_category(name, category)
-
-            site.categories.append(new_category)
-
-            return template_response('main/course.jinja2', objects_list=site.categories)
-        else:
-            categories = site.categories
-            return template_response('main/create_category.jinja2', categories=categories)
+        schema = {'name': name}
+        new_category.mark_new(schema)
+        UnitOfWork.get_current().commit()
 
 
 @main_route.all_requests(url='/category-list')
-class CategoryList:
-    @Debugger(name='CategoryList')
-    async def __call__(self, request):
-        logger.log('Список категорий')
-        return template_response('main/category_list.jinja2',
-                                 objects_list=site.categories)
+class CategoryList(ListView):
+    template_name = 'main/category_list.jinja2'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('category')
+        return mapper.all()
 
 
 @main_route.all_requests(url='/copy-course')
@@ -161,8 +158,11 @@ class CopyCourse:
 
 @main_route.all_requests(url='/student-list')
 class StudentListView(ListView):
-    queryset = site.students
     template_name = 'main/student_list.jinja2'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('student')
+        return mapper.all()
 
 
 @main_route.all_requests(url='/create-student/')
@@ -171,8 +171,12 @@ class StudentCreateView(CreateView):
 
     async def create_obj(self, data: dict):
         name: str = data['name']
-        new_obj = site.create_user('student', name)
+        new_obj = site.create_user('student')
+
         site.students.append(new_obj)
+        schema = {'name': name}
+        new_obj.mark_new(schema)
+        UnitOfWork.get_current().commit()
 
 
 @main_route.all_requests(url='/add-student/')
