@@ -4,8 +4,8 @@ from aioWebWolf.utils.decoder import Decoder
 
 class GetRequests:
 
-    @staticmethod
-    async def parse_input_data(data: str):
+    @classmethod
+    async def parse_input_data(cls, data: str):
         result = {}
         if data:
             # делим параметры через &
@@ -16,12 +16,16 @@ class GetRequests:
                 result[k] = v
         return result
 
-    @staticmethod
-    async def get_request_params(environ):
+    @classmethod
+    async def get_request_params(cls, environ):
         # получаем параметры запроса
         query_bytes: bytes = environ['query_string']
         query_string = query_bytes.decode('UTF-8')
 
-        result = await GetRequests.parse_input_data(query_string)
-        request_params = await Decoder.get_post_request_data(result)
+        result = await cls.parse_input_data(query_string)
+        request_params = await cls.decode_params(result)
         return request_params
+
+    @classmethod
+    async def decode_params(cls, data):
+        return await Decoder.get_post_request_data(data)
